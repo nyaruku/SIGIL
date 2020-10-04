@@ -5,7 +5,7 @@ If you haven't already, you should download the latest MinGW32 compiler from:
 
 	https://osdn.net/projects/mingw/releases/
 
-This guide assumes that you'll be using this compiler. If this is not the case, some of the instructions and directories in this guide will need to be changed to reflect your approach. Please also note that the MingW32 compiler provided by a CodeBlocks IDE installation is not currently up to date and may not work properly. Therefore, you should use the one referenced above.
+This guide assumes that you'll be using this compiler. If this is not the case, some of the instructions and directories in this guide will need to be changed to reflect your approach. Please also note that the MingW32 compiler provided by a CodeBlocks IDE installation is not currently up to date and may not work properly, but you might have success with CodeBlocks 17.12. Therefore, you should use the one referenced above.
 
 SIGIL uses CMake, which is a cross-platform build tool. You will need to download and run the CMake "Windows Installer" (.msi). When the installer asks, make sure you add CMake to your PATH variable. You can download the installer from:
 

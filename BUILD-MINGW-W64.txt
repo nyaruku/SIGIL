@@ -1,0 +1,89 @@
+BUILDING SIGIL FROM SOURCE USING MINGW-W64 IN WINDOWS
+-----------------------------------------------------
+
+This guide assumes that you'll be using the latest version of CodeBlocks (I used 20.03) and the MinGW-w64 compiler that it provides. For reference, the CodeBlocks version and installer used here is the "codeblocks-20.03mingw-setup.exe" version from:
+
+	http://www.codeblocks.org/downloads/26
+
+If you're using a different compiler or a different version of CodeBlocks then these instructions may need to be modified to suit your setup.
+
+SIGIL uses CMake, which is a cross-platform build tool. You will need to download and run the CMake "Windows Installer" (.msi). When the installer asks, make sure you add CMake to your PATH variable. You can download the installer from:
+
+	https://cmake.org/download/
+
+Next, download SIGIL. If you have git, you can use a command prompt:
+
+	git clone https://gitlab.com/geoff-nagy/sigil.git
+
+Otherwise, you can download the source code as a .zip file from:
+
+	https://gitlab.com/geoff-nagy/sigil
+
+Navigate to SIGIL's root directory, and enter the "deps" folder. This is where CMake-based dependencies of SIGIL are located. We will use Git to acquire GLFW and Freetype2. (You can ignore the "pigu" folder---it is used for Raspberry Pi builds.)
+
+Type the following:
+
+    git clone https://github.com/glfw/glfw.git
+    git clone git://git.sv.nongnu.org/freetype/freetype2.git
+
+We need OpenAL for audio. Download the "OpenAL 1.1 Core SDK (zip)" file from
+
+	https://www.openal.org/downloads/
+
+and extract and run the installer. When prompted, you should also run the OpenAL redistributable, which will place the OpenAL DLLs and header files into your system.
+
+Next, we can start building SIGIL. Enter the directory "sigil" and create a folder called "build-mingw-w64".
+
+Open CMake-GUI. For "Where is the source code", browse to the root directory "sigil". For "Where to build the binaries", browse to the directory "build-mingw-w64" that you created in the previous step.
+
+Click "Configure". When prompted, select the "MinGW Makefiles" generator from the drop-down list. Select "Specify native compilers", and use the following entries, assuming you've installed CodeBlocks with the correct values:
+
+C:                              C:/Program Files/CodeBlocks/MinGW/bin/gcc.exe
+C++:                            C:/Program Files/CodeBlocks/MinGW/bin/g++.exe
+FORTRAN:                        [blank]
+
+SIGIL depends on the OpenGL Extension Wrangler (GLEW) library. Headers and pre-compiled libs are included with SIGIL in the /glew folder, for every compiler that SIGIL supports.
+
+After clicking "Configure", CMake will attempt to find some of SIGIL's required dependencies, but it will likely fail and we will have to specify them manually. Note that my SIGIL root folder is contained in C:/Users/geoff, but for you it will be different.
+
+GLEW_SHARED_LIBRARY_DEBUG:      C:/Users/geoff/sigil/glew/lib/mingw-w64/glew32.dll
+GLEW_SHARED_LIBRARY_RELEASE:    C:/Users/geoff/sigil/glew/lib/mingw-w64/glew32.dll
+GLEW_STATIC_LIBRARY_DEBUG:      C:/Users/geoff/sigil/glew/lib/mingw-w64/libglew32.dll.a
+GLEW_STATIC_LIBRARY_RELEASE:    C:/Users/geoff/sigil/glew/lib/mingw-w64/libglew32.dll.a
+
+You should also specify a few other parameters. Not all parameters will be immediately visible right away; you may need to click "Configure" after specifying the parameters that are actually available, before the next ones become visible.
+
+CMAKE_BUILD_TYPE:               Release
+OPENAL_INCLUDE_DIR:             C:/Program Files (x86)/OpenAL 1.1 SDK/include
+OPENAL_LIBRARY:                 C:/Windows/System32/OpenAL32.dll
+GLFW_INSTALL:                   [unchecked]
+CPACK_SOURCE_7Z:                [unchecked]
+CPACK_SOURCE_ZIP:               [unchecked]
+
+Again, if errors occur, not all of the above variables may be immediately present. You'll need to fix any existing errors and click "Configure" again for the remaining variables to appear. Repeat this process until the configuration completes without errors---you should only have to do this once or twice if you've set everything up correctly. (It's also possible that CMake will assign the correct values to all of these variables on the first try; it depends on your system configuration.)
+
+If no errors occurred during configuration (a message box will appear if there are errors), you can click "Generate". This will generate a Makefile that we will use to compile SIGIL.
+
+Make sure the "make" program we will use is in your PATH variable. It is likely in:
+
+	C:/Program Files/CodeBlocks/MinGW/bin
+
+but it may vary if you're using a different compiler or CodeBlocks setup.
+
+Open a terminal in the "build-mingw-w64" directory. Type
+
+	mingw32-make
+
+This will create the files
+
+	sigil/build-mingw-w64/libsigil.dll
+	sigil/build-mingw-w64/libsigil.dll.a
+
+It's probably now a good idea to put all of the necessary SIGIL files in a common location for you to copy into your SIGIL projects later on. This is the same process that I use when building and distributing SIGIL.
+
+	C:/Windows/System32/OpenAL32.dll      ---> sigil/sigil-mingw-w64/OpenAL32.dll
+	sigil/glew/lib/mingw-w64/glew32.dll   ---> sigil/sigil-mingw-w64/glew32.dll
+	sigil/build-mingw-w64/libsigil.dll    ---> sigil/sigil-mingw-w64/libsigil.dll
+	sigil/build-mingw-w64/libsigil.dll.a  ---> sigil/sigil-mingw-w64/lib/libsigil.dll.a
+
+And you're done! Example projects for every supported compiler are provided in the "examples" folder.

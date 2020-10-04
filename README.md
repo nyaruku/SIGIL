@@ -12,7 +12,7 @@ A very simple cross-platform library for playing audio, handling basic input, an
 
 **include**: contains the *sl.h* header file you need to include in your applications to use SIGIL
 
-**scripts**: contains scripts designed to simplify the mass-build process I use for SIGIL
+**scripts**: contains scripts designed to simplify the mass-build process I use for SIGIL; they should be invokved from the *scripts* folder
 
 **sigil-XXXXXX**: contains DLLs and static libs for SIGIL built using various compilers
 

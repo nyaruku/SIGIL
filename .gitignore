@@ -1,6 +1,7 @@
 # ignore build files
 build-linux-gcc
 build-mingw32
+build-mingw-w64
 build-rpi
 build-vc2010
 build-vc2010-win64
