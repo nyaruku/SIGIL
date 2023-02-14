@@ -1,5 +1,5 @@
 #pragma once
-
+#include <stdbool.h>
 /*
 Sound, Input, and Graphics Integration Library (SIGIL) 0.9.0
 Geoff Nagy
@@ -106,15 +106,17 @@ extern "C" {
 
 	// initialization commands
 
-	SIGIL_API void slWindow(int width, int height, const char *title, int fullScreen);
+	SIGIL_API void slWindow(int width, int height, const char *title, int fullScreen, int refreshRate, int vsync, int resizable, int borderless);
 	SIGIL_API void slShowCursor(int showCursor);
 	SIGIL_API void slClose();
 	SIGIL_API int slShouldClose();
-
+	SIGIL_API void slSetRefreshRate(int HZ, int vsync);
+	SIGIL_API void slSetWindowTitle(char* title);
+	SIGIL_API int slGetWindowHeight();
+	SIGIL_API int slGetWindowWidth();
+	SIGIL_API void slSetWindowSize(int x, int y);
 	// simple input
-
 	SIGIL_API int slGetKey(int key);
-
 	SIGIL_API int slGetMouseButton(int button);
 	SIGIL_API int slGetMouseX();
 	SIGIL_API int slGetMouseY();
@@ -194,6 +196,18 @@ extern "C" {
 	SIGIL_API void slSetFont(int font, int fontSize);
 	SIGIL_API void slSetFontSize(int fontSize);
 	SIGIL_API void slText(double x, double y, const char *text);
+
+	//
+	// PERSONAL ADITION
+	//
+
+	SIGIL_API unsigned char slGetOpenGLVersion();
+
+	SIGIL_API void slSetWindowPos(int posX, int posY);
+	SIGIL_API int slGetWindowPosX();
+	SIGIL_API int slGetWindowPosY();
+	
+
 
 #ifdef __cplusplus
 } // closing brace for extern "C"
