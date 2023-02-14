@@ -14,3 +14,6 @@ planning to add:
 Added:
 - custom frame rate
 - fixed window size
+- get window position/change window position
+- change window size
+- make window borderless
