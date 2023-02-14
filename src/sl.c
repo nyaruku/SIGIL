@@ -1,5 +1,5 @@
 #include "sl.h"
-
+#include <stdbool.h>
 #include "internal/shaders.h"
 #include "internal/triangle.h"
 #include "internal/rectangle.h"
@@ -18,14 +18,14 @@
 #include "config.h"
 
 #ifdef __MINGW32__
-	#include "util/gldebugging.h"
+#include "util/gldebugging.h"
 #endif
 
 #ifdef USE_GLES
-	#include <GLES2/gl2.h>
-	#include <GLES2/gl2ext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 #else
-	#include <GL/glew.h>
+#include <GL/glew.h>
 #endif
 
 #include <stdlib.h>
@@ -43,9 +43,8 @@ static int slMousePosY;
 static uint8_t slMousePosStale = 1;
 
 static Mat4 slMatrixStack[SL_MATRIX_STACK_SIZE];
-static Mat4 *slCurrentMatrix = &slMatrixStack[0];
+static Mat4* slCurrentMatrix = &slMatrixStack[0];
 static int slStackSize = 0;
-
 static Mat4 slProjectionMatrix;
 
 static Vec4 slForeColor;// = {.x = 1.0, .y = 1.0, .z = 1.0, .w = 1.0};
@@ -68,39 +67,39 @@ static void sliKillResources();
 
 // window commands
 
-void slWindow(int width, int height, const char *title, int fullScreen)
+void slWindow(int width, int height, const char* title, int fullScreen, int refreshRate, int vsync, int resizable, int borderless)
 {
 	// error tracking for any window-creation issues we run into
-	#ifndef USE_GLES
-		GLenum error;
-	#endif
+#ifndef USE_GLES
+	GLenum error;
+#endif
 
-	if(!sliIsWindowOpen())
+	if (!sliIsWindowOpen())
 	{
 		// use either GLFW or PIGU to set up our window
-		sliOpenWindow(width, height, title, fullScreen);
+		sliOpenWindow(width, height, title, fullScreen, refreshRate, vsync, resizable, borderless);
 
 		// configure our viewing area
 		glViewport(0, 0, width, height);
 
 		// enable our extensions handler
-		#ifndef USE_GLES
-			glewExperimental = 1;
-			error = glewInit();
-			if(error != GLEW_OK)
-			{
-				fprintf(stderr, "slWindow() could not initialize GLEW: %s\n", glewGetErrorString(error));
-				exit(1);
-			}
-		#endif
+#ifndef USE_GLES
+		glewExperimental = 1;
+		error = glewInit();
+		if (error != GLEW_OK)
+		{
+			fprintf(stderr, "slWindow() could not initialize GLEW: %s\n", glewGetErrorString(error));
+			exit(1);
+		}
+#endif
 
 		// start with a clean error slate
 		glGetError();
 
 		// turn on OpenGL debugging
-		#ifdef DEBUG
-			initGLDebugger();
-		#endif
+#ifdef DEBUG
+		initGLDebugger();
+#endif
 
 		// turn on blending and turn depth testing off
 		glEnable(GL_BLEND);
@@ -127,14 +126,48 @@ void slWindow(int width, int height, const char *title, int fullScreen)
 	}
 }
 
+void slSetWindowPos(int posX, int posY)
+{
+	sliSetWindowPos(posX,posY);
+}
+
+int slGetWindowPosX() {
+	return sliGetWindowPosX();
+}
+
+int slGetWindowPosY() {
+	return sliGetWindowPosY();
+}
+
 void slShowCursor(int showCursor)
 {
-    sliShowCursor(showCursor);
+	sliShowCursor(showCursor);
+}
+
+void slSetRefreshRate(int HZ, int vsync) {
+	sliSetRefreshRate(HZ, vsync);
+}
+
+void slSetWindowTitle(char* title) {
+	sliSetWindowTitle(title);
+}
+
+int slGetWindowHeight() {
+	return sliGetWindowHeight();
+}
+
+void slSetWindowSize(int x, int y) {
+
+	sliSetWindowSize(x, y);
+}
+
+int slGetWindowWidth() {
+	return sliGetWindowWidth();
 }
 
 void slClose()
 {
-	if(sliIsWindowOpen())
+	if (sliIsWindowOpen())
 	{
 		sliKillResources();
 		sliCloseWindow();
@@ -148,7 +181,7 @@ void slClose()
 
 int slShouldClose()
 {
-	if(!sliIsWindowOpen())
+	if (!sliIsWindowOpen())
 	{
 		fprintf(stderr, "slShouldClose() cannot be called because no window exists\n");
 		exit(1);
@@ -172,7 +205,7 @@ int slGetMouseButton(int button)
 int slGetMouseX()
 {
 	// make sure a render step has not occurred since we last read the mouse position
-	if(slMousePosStale)
+	if (slMousePosStale)
 	{
 		sliGetMousePos(&slMousePosX, &slMousePosY);
 		slMousePosStale = 0;
@@ -184,7 +217,7 @@ int slGetMouseX()
 int slGetMouseY()
 {
 	// make sure a render step has not occurred since we last read the mouse position
-	if(slMousePosStale)
+	if (slMousePosStale)
 	{
 		sliGetMousePos(&slMousePosX, &slMousePosY);
 		slMousePosStale = 0;
@@ -228,9 +261,9 @@ void slRender()
 
 	// compute delta time value; ensure we don't have any long pauses or tiny time quantums
 	slDeltaTime = (slNewFrameTime - slOldFrameTime);
-	if(slDeltaTime < SL_MIN_DELTA_TIME)
+	if (slDeltaTime < SL_MIN_DELTA_TIME)
 		slDeltaTime = SL_MIN_DELTA_TIME;
-	if(slDeltaTime > SL_MAX_DELTA_TIME)
+	if (slDeltaTime > SL_MAX_DELTA_TIME)
 		slDeltaTime = SL_MAX_DELTA_TIME;
 
 	// set our mouse position as needing refreshing
@@ -266,10 +299,10 @@ void slSetAdditiveBlend(int additiveBlend)
 
 void slPush()
 {
-	if(slStackSize < SL_MATRIX_STACK_SIZE - 1)
+	if (slStackSize < SL_MATRIX_STACK_SIZE - 1)
 	{
-		slStackSize ++;
-		slCurrentMatrix ++;
+		slStackSize++;
+		slCurrentMatrix++;
 		*slCurrentMatrix = *(slCurrentMatrix - 1);
 	}
 	else
@@ -281,10 +314,10 @@ void slPush()
 
 void slPop()
 {
-	if(slStackSize > 0)
+	if (slStackSize > 0)
 	{
-		slStackSize --;
-		slCurrentMatrix --;
+		slStackSize--;
+		slCurrentMatrix--;
 	}
 	else
 	{
@@ -310,11 +343,11 @@ void slScale(double x, double y)
 
 // texture loading
 
-int slLoadTexture(const char *filename)
+int slLoadTexture(const char* filename)
 {
 	int result = -1;
 
-	if(sliIsWindowOpen())
+	if (sliIsWindowOpen())
 	{
 		result = (int)loadOpenGLTexture(filename);
 	}
@@ -329,11 +362,11 @@ int slLoadTexture(const char *filename)
 
 // sound loading and playing
 
-int slLoadWAV(const char *filename)
+int slLoadWAV(const char* filename)
 {
-	int result =  -1;
+	int result = -1;
 
-	if(sliIsWindowOpen())
+	if (sliIsWindowOpen())
 	{
 		result = sliLoadWAV(filename);
 	}
@@ -535,7 +568,7 @@ void slSprite(int texture, double x, double y, double width, double height)
 
 void slSetTextAlign(int fontAlign)
 {
-	if(fontAlign >= 0 && fontAlign <= 2)
+	if (fontAlign >= 0 && fontAlign <= 2)
 	{
 		slTextAlign = fontAlign;
 	}
@@ -546,21 +579,21 @@ void slSetTextAlign(int fontAlign)
 	}
 }
 
-double slGetTextWidth(const char *text)
+double slGetTextWidth(const char* text)
 {
 	return sliTextWidth(text);
 }
 
-double slGetTextHeight(const char *text)
+double slGetTextHeight(const char* text)
 {
 	return sliTextHeight(text);
 }
 
-int slLoadFont(const char *fontFilename)
+int slLoadFont(const char* fontFilename)
 {
 	int result = -1;
 
-	if(sliIsWindowOpen())
+	if (sliIsWindowOpen())
 	{
 		result = sliLoadFont(fontFilename);
 	}
@@ -575,7 +608,7 @@ int slLoadFont(const char *fontFilename)
 
 void slSetFont(int font, int fontSize)
 {
-	if(sliIsWindowOpen())
+	if (sliIsWindowOpen())
 	{
 		sliFont(font, fontSize);
 	}
@@ -591,15 +624,15 @@ void slSetFontSize(int fontSize)
 	sliFontSize(fontSize);
 }
 
-void slText(double x, double y, const char *text)
+void slText(double x, double y, const char* text)
 {
 	Mat4 modelview = translate(slCurrentMatrix, x, y);
 
-	if(slTextAlign == SL_ALIGN_CENTER)
+	if (slTextAlign == SL_ALIGN_CENTER)
 	{
 		modelview = translate(&modelview, -slGetTextWidth(text) / 2.0, 0.0);
 	}
-	else if(slTextAlign == SL_ALIGN_RIGHT)
+	else if (slTextAlign == SL_ALIGN_RIGHT)
 	{
 		modelview = translate(&modelview, -slGetTextWidth(text), 0.0);
 	}
@@ -652,4 +685,12 @@ void sliKillResources()
 	sliTriangleDestroy();
 	sliShadersDestroy();
 	sliSoundDestroy();
+}
+
+//
+// ADDITION 
+//
+
+unsigned char slGetOpenGLVersion() {
+	return sliOpenGLVersion();
 }
